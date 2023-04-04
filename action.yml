@@ -1,0 +1,39 @@
+name: 'es-demos Node composite action'
+description: ''
+
+inputs:
+  node-version:
+    description: 'Node version to use'
+    required: false
+    default: '16.x'
+  npm-token:
+    description: 'NPM token to use'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # required to use the composite action scripts
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+
+    - run: node.sh
+      shell: bash
+      env:
+        NODE_VERSION: ${{ inputs.node-version }}
+        NPM_TOKEN: ${{ inputs.npm-token }}
+
+    - run: npm ci
+      shell: bash
+
+    - run: npm run build --if-present
+      shell: bash
+
+    - run: npm run lint --if-present
+      shell: bash
+
+    - run: npm test --if-present
+      shell: bash
+
+    - run: cleanup.sh
+      shell: bash
